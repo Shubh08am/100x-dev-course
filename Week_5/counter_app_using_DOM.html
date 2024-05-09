@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <button id="myBtn" onclick="updateCounter()">Counter 0</button>
+    <script>
+        let updateCounter = ()=>{
+            let btn = document.getElementById("myBtn");
+            let text = btn.innerText;
+            let words = text.split(" ");
+
+            let intup= Number(words[1])+1;
+
+            btn.innerHTML=words[0]+" "+intup;
+        }
+    </script>
+</body>
+</html>

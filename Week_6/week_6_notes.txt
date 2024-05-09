@@ -1,0 +1,562 @@
+In react a component can return only a single top level xml
+why??
+1> Makes it easy to do reconciliation
+reconciliation is the process of figuring out what DOM updates need to happen 
+
+return (
+      <div>
+        <Header title = "tit1"></Header>
+        <Header title="tit2"></Header>
+      </div>
+  )
+
+OR
+
+return (
+      <>
+        <Header title = "tit1"></Header>
+        <Header title="tit2"></Header>
+      </>
+  )
+
+OR
+
+  return (
+      <Fragment>
+        <Header title = "tit1"></Header>
+        <Header title="tit2"></Header>
+      </Fragment>
+  )
+
+
+
+
+React Re-rendering
+any time a final dom manipulation occurs i.e, react changes the dom is re-rendering 
+we try to minimize re renders
+
+A re-render means that
+1> React did some work to calculate what all should update in this component
+2> The component actually got called 
+3> The inspector shows you a bounding box around the component
+
+It happens when 
+1> A state variable that is being used inside a component changes
+2> A parent component re-render triggers all children re-rendering
+
+You want to minimise the number of re-renders to make a highly optimal react app. The more the number of re-rendered ,the worse
+
+
+import { Fragment, useState } from 'react'
+
+//import './App.css'
+
+function App() {
+  // pushing this state down to minimise the number of re-renders
+  const [tit1, setTit1] = useState("tit1")
+  
+
+
+  return (
+      <Fragment>
+        <button onClick={()=>{
+          setTit1(`tit1 ${Math.random()}`);
+          
+        }}>Update the title</button>
+        <Header title = {tit1}></Header>
+        <Header title = {tit2}></Header>
+      </Fragment>
+  )
+}
+
+function Header({title}){
+  console.log()
+  return (
+    <div>
+      {title}
+    </div>
+  )
+}
+export default App
+
+
+
+minimised re-render
+
+import { Fragment, useState } from 'react'
+
+//import './App.css'
+
+function App() {
+  // pushing this state down to minimise the number of re-renders
+  // const [tit1, setTit1] = useState("tit1")
+  
+
+
+  return (
+      <Fragment>
+        <HeaderWithButton ></HeaderWithButton>
+        <Header title = "tit2"></Header>
+      </Fragment>
+  )
+}
+
+function HeaderWithButton(){
+  const [title , setTitle] = useState("tit1");
+
+  return (
+    <div>
+      <button onClick={()=>{
+          setTitle(`tit1 ${Math.random()}`);
+          
+        }}>Update the title</button> <br></br>
+      
+      {title}
+    </div>
+  )
+}
+function Header({title}){
+  console.log()
+  return (
+    <div>
+      {title}
+    </div>
+  )
+}
+export default App
+
+
+NOTE: try to pushdown states used by multiple components to the lowest common ancestor
+
+
+Memo ::
+This is another solution for re-rendering 
+memo lets you skip re-rendering a component when its props are unchanged.
+
+import React,{ Fragment, memo, useState } from 'react'
+
+//import './App.css'
+
+function App() {
+  
+  const [title1, setTitle1] = useState("title1")
+  
+
+
+  return (
+      <Fragment>
+        <button onClick={()=>{
+          setTitle1(`title1 ${Math.random()}`);
+        }}>Update the title</button>
+        <Header title = {title1}></Header>
+        <Header title = "title2"></Header>
+      </Fragment>
+  )
+}
+
+
+const Header =  React.memo(({title})=>{
+  return (
+    <div>
+      {title}
+    </div>
+  )
+})
+
+
+
+export default App
+
+
+
+
+key in react
+You need to give each array item a key, a number or string which uniquely identifies each element in the array
+Key tells react which array item each component corresponds to, so that it can match them  up later. This becomes important if your array items can move(e.g. due to sorting) , get inserted, or get deleted. A well-chosen key helps React infer what exactly has happended, and make correct updates to the DOM tree.
+React JS keys are a way of providing a unique identity to each item while creating the React JS Lists so that React can identify the element to be processed.
+Keys are used to give an identity to the elements in the lists. It is recommended to use a string as a key that uniquely identifies the items in the list. key helps in optimal re-rendering
+Keys are not the same as props, only the method of assigning “key” to a component is the same as that of props. Keys are internal to React and can not be accessed from inside of the component like props. Therefore, we can use the same value we have assigned to the Key for any other prop we are passing to the Component.
+
+{todos.map((todo)=>{
+   return <Todo key = {todo.id} title = {todo.title} description={todo.description}></Todo>
+})}
+
+function Todo({title,description}){
+  return (
+    <>
+    <h1>{title}</h1>
+    <h4>{description}</h4>
+    </>
+  )
+}
+
+
+
+Wrapper components in react
+Wrapper components are components that surround unknown components and provide a default structure to display the child components.
+
+import { useState } from 'react'
+
+// import './App.css'
+
+function App() {
+
+  return (
+    <>
+      <CardWrapper>
+        <TextComponent1></TextComponent1>
+      </CardWrapper>
+
+      <CardWrapper>
+        <TextComponent2></TextComponent2>
+      </CardWrapper>
+    </>
+  )
+}
+
+function CardWrapper({children}){
+  return (
+    <div style={{border: "2px solid black",padding:20}}>
+      {children}
+    </div>
+  )
+}
+
+
+function TextComponent1(){
+  return (
+    <div>
+      hi there 
+    </div>
+  )
+}
+
+function TextComponent2(){
+  return (
+    <div>
+      hi there 
+    </div>
+  )
+}
+export default App
+
+
+
+Side Effects
+In react, the concept of side effects encompasses any operations that reach outside the functional scope of a React component. These operations can effect other components, interact with the browser, or perform asynchronous data fetching.
+
+
+
+Hooks
+These functions start with a use are called hooks
+Hooks in React are functions that allow you to "hook into" React state and lifecycle features from function components.
+Hooks are a feature introduced in React 16.8 that allow you to use state and other React features without writing a class. They enable functional compoenents to have access to stateful logic and lifecycle feature, which were previously only possible in class components. This has led to a more concise and readable way of writing components in React.
+
+
+useState
+Let's you describe the state of your app. Whenever state updates, it triggers a re-render which finally results in a DOM update.
+
+useEffect
+useEffect hook is a feature in React, a popular JavaScript library for building user interfaces. It allows you to perfomr side effects in function components. Side effects are operations that can affect other components or can't be done during renedering, such as data fetching , subsciriptions, or manually changing DOm in React components.
+It serves the same function as 'componentDidMount', 'componentDidUpdate' and 'componentWillUnmount' in React class components but unified into a single api.
+
+What does useEffect do? By using this Hook, you tell React that your component needs to do something after render. React will remember the function you passed (we’ll refer to it as our “effect”), and call it later after performing the DOM updates.
+
+Does useEffect run after every render? Yes! By default, it runs both after the first render and after every update. (We will later talk about how to customize this.) Instead of thinking in terms of “mounting” and “updating”, you might find it easier to think that effects happen “after render”. React guarantees the DOM has been updated by the time it runs the effects.
+
+
+NOTE: the first argument to useEffect can't be async function. We use dependency to determine when the callback function in useEffect should execute.
+
+NOTE: dependency array in useEffect takes state variables as input, and any time that state variable changes the callback runs
+
+import { useState } from 'react'
+
+// import './App.css'
+
+function App() {
+  const [todos, setTodos] = useState([])
+
+  const useEffect= (()=>{
+    setInterval(()=>{
+      fetch("https://sum-server.100xdevs.com/todos")
+      .then(async (res)=>{
+        const json = await res.json();
+        setTodos(json.todos)
+      })
+    },10000)
+  },[])
+
+  return (
+    <>
+    {
+    todos.map((todo)=>{
+      return <Todo key={todo.id} title={todo.title} description={todo.description} />
+    })
+    }
+    </>
+  )
+}
+
+
+function Todo({title,description}){
+  return <div>
+    <h1>{title}</h1>
+    <h4>{description}</h4>
+  </div>
+}
+export default App
+
+
+
+
+
+Q) 
+problem statement is to create four buttons on screen 
+1,2,3,4 
+depending on which button is clicked render the todo on screen of that id
+
+
+
+code:
+import { useEffect,useState } from 'react'
+
+
+// problem statement is to create four buttons on screen 
+// 1,2,3,4 
+// depending on which button is clicked render the todo on screen of that id
+
+
+function App() {
+    const [selectedId,setSelectedId] = useState(1);
+
+  return (
+    <>
+        <button onClick={function onClickHandler(){
+            setSelectedId(1);
+        }}>1</button>
+
+        <button onClick={function onClickHandler(e){
+            setSelectedId(2);
+        }}>2</button>
+
+        <button onClick={function onClickHandler(e){
+            setSelectedId(3);
+        }}>3</button>
+
+        <button onClick={function onClickHandler(e){
+            setSelectedId(4);
+        }}>4</button>
+
+        <TodoId id={selectedId}></TodoId>
+    </>
+  )
+}
+
+function TodoId({id}){
+
+    const [todo , setTodo] = useState({});
+
+    useEffect(()=>{
+        fetch(`https://sum-server.100xdevs.com/todo?id=${id}`).then(async (res)=>{
+            const json = await res.json()
+            setTodo(json.todo);
+        })
+    },[id])
+
+    return (
+        <div>
+            Id: {id}
+            <h1>{todo.title}</h1>
+            <h4>{todo.description}</h4>
+        </div>
+    )
+
+
+}
+export default App
+end.
+
+
+
+useMemo
+import { useState } from 'react'
+
+
+// task is to create an app that does two things
+// 1. increases a counter by 1
+// 2.  Lets user put a value in an input box(n) and you need to 
+// to show sum from 1-n
+
+
+// problem is when we click the button re-render happens and the expensive 
+// for loop for calculating the sum also runs again
+// although the input value is not changed
+// can't we just somehow remember the value of sum somehow
+
+
+// useMemo is used to remember the value across renders
+function App() {
+  const [count, setCount] = useState(0)
+  
+  const [inputValue,setInputValue] = useState(0)
+
+  let sum = 0
+  for(let i=0;i<=inputValue;i++){
+    sum+=i;
+  }
+
+  return (
+    <>
+     <input placeholder='enter n' onChange={(e)=>{
+      setInputValue(e.target.value)
+     }}></input>
+
+     <div>Sum from 1 to {inputValue} is {sum}</div>
+
+     <button onClick={()=>{
+      setCount(count+1)
+     }}>Counter ({count})</button>
+    </>
+  )
+}
+
+export default App
+
+
+
+on solution is to introduce sum as a new state and use useEffect hook with dependency array having the inputValue i.e, anytime the input value changes the callback having the loop to calcuate the sum would run and then we would use setSum to the new sum value and re-render everything. This would then cause 2 re-renders for everytime input is changed
+
+
+useMemo solution
+
+code:
+import { useState } from 'react'
+
+
+// task is to create an app that does two things
+// 1. increases a counter by 1
+// 2.  Lets user put a value in an input box(n) and you need to 
+// to show sum from 1-n
+
+
+// problem is when we click the button re-render happens and the expensive 
+// for loop for calculating the sum also runs again
+// although the input value is not changed
+// can't we just somehow remember the value of sum somehow
+
+
+// useMemo is used to remember the value across renders
+function App() {
+  const [count, setCount] = useState(0)
+  
+  const [inputValue,setInputValue] = useState(0)
+
+
+  let sum = useMemo(()=>{
+    let sum =0;
+    for(let i=0;i<=inputValue;i++){
+      sum+=i;
+    }
+    return sum;
+  },[inputValue])
+  
+
+  return (
+    <>
+     <input placeholder='enter n' onChange={(e)=>{
+      setInputValue(e.target.value)
+     }}></input>
+
+     <div>Sum from 1 to {inputValue} is {sum}</div>
+
+     <button onClick={()=>{
+      setCount(count+1)
+     }}>Counter ({count})</button>
+    </>
+  )
+}
+
+export default App
+end.
+
+
+
+What is refrential equality??
+value and reference(memory location) must be same 
+
+
+useCallback
+useCallback is a hook in React, a popular JS library for building user interfaces. It is used to memoize functions, which can help in optimizing the performance of your application, especially in cases involving child components that rely on reference equality to prevent unnecessary renders.
+
+
+import { memo ,useState } from 'react'
+
+
+function App() {
+  const [count, setCount] = useState(0)
+
+  function onClick(){
+    console.log("child clicked")
+  }
+  return (
+    <>
+      <Child onClick={onClick}></Child>
+      <button onClick={()=>{
+        setCount(count+1)
+      }}>Counter {count}</button>
+    </>
+  )
+}
+
+const Child = memo(({onClick})=>{
+  console.log('child render')
+
+  return <div>
+    <button onClick={onClick}>Button Clicked</button>
+  </div>
+})
+
+export default App
+
+in the above code whenever we click the counter button the state variable count is updated using setCount and hence the App re-renders, so does it child, to prevent the re-render of child if props have not changed we've used memo with the child functional component which takes the onClick function as a prop
+Although we made sure to prevent re-render of child by using memo but it is seen that it still re-renders because every time the app re-renders new onClick function is defined in memory which may seem similar to us in terms of functionality but is not referentially equal what react looks for and hence it re-renders.same problem occurs with objects also
+
+The solution to above problem is useCallback
+
+
+import { memo ,useCallback,useState } from 'react'
+
+
+function App() {
+  const [count, setCount] = useState(0)
+
+  const onClick = useCallback(()=>{
+    console.log("child clicked")
+  },[])
+	
+  // the dependence array would have state on whose change we must consider the function to be changed otherwise not, it's very imp, shown in offline video week 6
+
+  // function onClick(){
+  //   console.log("child clicked")
+  // }
+
+
+  return (
+    <>
+      <Child onClick={onClick}></Child>
+      <button onClick={()=>{
+        setCount(count+1)
+      }}>Counter {count}</button>
+    </>
+  )
+}
+
+const Child = memo(({onClick})=>{
+  console.log('child render')
+
+  return <div>
+    <button onClick={onClick}>Button Clicked</button>
+  </div>
+})
+
+export default App

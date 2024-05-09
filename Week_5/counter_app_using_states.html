@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <div id="buttonParent">
+
+    </div>
+    <script>
+        
+        //state initialization
+        let state ={
+            count : 0
+        }
+
+        // defining the button component -> needed to write in react 
+        function onButtonPress(){
+            state.count++;
+            buttonComponentReRender();
+        }
+
+        //not needed to write in react as it is react library 
+        function buttonComponentReRender(){
+            document.getElementById("buttonParent").innerHTML="";//clear the button 
+            const component = buttonComponent(state.count); // find new counter value
+            document.getElementById("buttonParent").appendChild(component);//insert button again than 
+        }
+
+        // return the button component -> needed to write in react 
+        function buttonComponent(count){
+            const button = document.createElement("button");
+            button.innerHTML=`Counter ${count}`;
+            button.setAttribute("onclick",'onButtonPress()')
+            return button;
+        }
+
+        buttonComponentReRender();
+    </script>
+</body>
+</html>

@@ -1,0 +1,512 @@
+mongodb url
+mongodb+srv://shubh08am:Shubham8@cluster0.ywhcg58.mongodb.net/
+
+postgres url
+postgresql://test_owner:UNZoBc9bw8fC@ep-mute-sky-a50z5hvw.us-east-2.aws.neon.tech/test?sslmode=require
+
+
+Uses of middlewares is prechecks:
+1) auth check
+2) input validation
+
+before we proceed lets add constraints to our route
+1) user needs to send a kidneyId as query param
+2) user should send a username and password in headers
+
+ugly way of implementing the above two tasks in backend logic
+is to use if checks which with multiple routes would violate 
+dry principle
+
+
+NOTE : we can have multiple callbacks in app.get etc
+app.get("/",(req,res,next)=>{
+	// if everything goes well
+	next();
+	// now control reaches the next callback
+},(req,res)=>{
+	// do something
+})
+
+
+middleware implementation
+code:
+const express = require('express');
+const app = express();
+
+let userMiddleware = (req,res,next)=>{
+    const username = req.headers.username;
+    const password = req.headers.password;
+
+    if(username != "harkirat" || password != "pass"){
+        res.status(403).json({
+            msg:"user doesn't exist"
+        })
+    }
+    else{
+        next();
+    }
+}
+
+let kidneyMiddleware = (req,res,next)=>{
+    const kidneyId = req.query.kidneyId;
+    if(kidneyId != 1 && kidneyId != 2){
+        res.status(403).json({
+            msg : "Incorrect inputs"
+        })
+    }
+    else{
+        next();
+    }
+}
+
+app.get("/health-checkup",userMiddleware,kidneyMiddleware,(req,res)=>{
+    
+    // all prechecks are perfomed by middlewares
+
+    // do something with kidney here
+    res.json({
+        msg : "your kidney is fine !"
+    })
+
+})
+
+
+
+app.listen(3000,()=>{
+    console.log("app listening on port 3000");
+})
+end.
+
+
+Another use of middleware is to calculate the number of requests hitting the server
+by just introducing another middleware function and passing it in all routes
+
+
+What is app.use()???
+app.use(userMiddleware) ;
+this means that any route coming after this line will by default have userMiddleware placed before the actual functionality
+
+
+What is app.use(express.json())??
+it is middleware to parse req body as json format
+
+
+why do we need input validation??
+we are expecting an array kidneys in req body
+but the user can send almost anything as ip in the req ,it is the devlopers job to perform input validation to  make sure your server does not crash also with wrong ip user can break into your server now we can manually use multiple if checks for input validation but the better way to do that is using zod library or global catches. If these errors are not handled properly then these are propogated to the
+end user which may expose backend logic.
+
+
+global catches
+global catches
+express recognizes this as an error handling middleware because it has 4 arguments.
+it is middleware which is always addedd at the end 
+after all routes
+this takes 4 parameters, err, req,res,next
+whenever there is any exception in any of the routes 
+the exception instead of getting displayed and reaching the 
+end user via frontend gets caught by the global catch
+then appropriate handling of err is done
+global catches prevent errors from propogating to end user
+
+code:
+app.use((err,req,res,next)=>{
+    res.json({
+        msg : "sorry something is up with our server"
+    });
+})
+end.
+
+
+
+Zod
+zod is a popular input validation library , where we only need to tell the ideal
+structure of ip and do not write the input validation code all by ourselves at the 
+top of each route or globally too.
+eg of input validation
+1) validating email to be of the form  <something>@gmail.com
+2) validating the password must of atleast 10 charcters in length having atleast
+one uppercase , one lowercase, one special character and one digit.
+
+
+we have earlier done ugly i/p validation
+eg 
+if(kidneyId != 1 && kidneyId != 2){
+	res.sendStatus(411);
+}
+
+step 1:
+npm install zod
+
+step2:
+const zod = require("zod")
+
+step 3:
+create zod schema
+eg schema for ip to be array of number
+const schema = zod.array(zod.number())
+
+eg schema for ip to be object as shown
+{
+    email: string => email format
+    password : atleast 8 letters
+    country : "IN" , "US"
+}
+
+const schema_obj=zod.object({
+    email: zod.string().email(),
+    password: zod.string().min(8),
+    country: zod.literal("IN").or(zod.literal("US"))
+})
+
+step 4: 
+get the ip inside the route validated from safeParse and checking the
+success variable inside the resposne
+code:
+const kidneys = req.body.kidneys
+const response = schema.safeParse(kidneys)
+if(!response.success){
+        res.status(411).json({
+            msg:"input is invalid"
+        })
+        return ;
+}
+const kidneyLength = kidneys.length;
+res.send(`you have ${kidneyLength} kidneys`);
+end.
+
+
+
+
+
+
+
+Authentication:
+Way 1(dumb) : 
+Ask user to everytime send username and password in req headers
+Way 2:
+give the user back a token on signup/signin, ask the user
+to send back the token in all future requests, when the user
+logs out , ask the user to forget the token (or revoke it from
+backend)
+these tokens are generally stored in browsers local storage
+but we can't store email and passwords on local storage as 
+it is very public
+
+
+
+
+Fetch
+Until now we've made a few http servers and hit those using postman or chrome dev
+tools , now we will do the same using html frontend website.
+use async await with fetch apis
+
+
+Cryptography jargons
+1) Hashing - passwords are stored in hash code in database , not possible to convert hash codes back to strings , one way, given o/p there's no way to figure out the i/p, changing the i/p a lil bit changes o/p by a lot.
+2) Encryption - similar to hash code with the only difference being decryption is 
+possible , 2 way , a string is encrypted using a password , string can be decrypted using the same password
+
+3) Json web tokens - takes some json as an input, also 2 way, on input gives an o/p
+which is a JWT, backtracking JWT to string is possible
+decoding of encoded JWT string is possible , but only the servers can verify and authenticate
+Its neither of encryption or hashing (its technically a digital signature), anyone 
+can see the original o/p the given signature, signature can be verified only by using the password
+
+JWT is used over passing username and password everytime because it saves extra db calls after signin which are async calls and takes time.
+
+4) Local storage - a place in ur browser where u can store some data usually
+can be used to implement cart functionality in e commerce
+authentication tokens
+user language preference
+user theme preference
+
+
+whenever I'm sending a req on chat.openai.com I'm sending back a token or a cookie
+, but when did I get this token , I probably got this token when I signed in sent by the serve. this token is stored in browser's local storage 
+whenever I log out this is removed from the local storage
+
+the very first time during login username and password is sent in a request to the
+server, the server hashes the password and verfies it , if verifies sends back a JWT which is stored in local storage, nowonwards front end devlopers have written 
+fetch logic in a way that everytime a request is sent we make sure to send back the JWT in the request headers and then backend everytime verifies the JWT
+
+Why JWT
+a generic answer could be that it saves db calls which are expensive.
+
+Assignment
+A backend having 2 end points 
+POST/signin
+Body{
+ username: string
+ password: string 
+}
+
+return a json web token with username encrypted , we dont send back the password encrypted in JWT as JWT can be decode hence may lead to leakage of password.
+
+GET /users
+Headers-
+Authorization header
+
+returns an array of all users if user is signed in (token is correct)
+returns 403 status code if not
+
+
+
+const jwt = require('jsonwebtoken')
+const jwtPassword = "123456"
+
+let token = jwt.sign({username:username},jwtPassword)
+let decoded = jwt.verify(token,jwtPassword)
+let username = decoded.username
+
+
+NOTE: only decoding jwt and not verifying 
+const decode = jwt.decode(token);
+if token can be decode then returns decoded obj otherwise returns null
+
+Databases why ?
+1) Data can't be dynamic, if you update in memory objects, the updates are lost if the process restarts
+2) There are multiple servers in the real world
+
+Mongodb lets you create databases
+In each DB, it lets you create tables(collections)
+In each table, it lets you dump JSON data
+It is schemaless
+It sclaes well and is a decent choice fro most use cases
+
+
+Mongoose 
+It is an ORM (object relational mapping)
+This library lets you connect to database
+Gives u mongodb validation
+
+how to use mongoose
+npm install mongoose
+1) const mongoose = require('mongoose')
+2) mongoose.connect(connectionstring/<databasename>)
+3)create a schema , the first parameter of mongoose.model is table name
+and second is schema
+
+const User = mongoose.model("Users",{
+    email: String,
+    password: String,
+    name : String
+});
+
+4) how to check if email already exists
+let email_exists = await User.findOne({email:email})
+if(email_exists){
+        return res.status(400).send("email already exists");
+    }
+
+5) put a new entry if email does not exists
+
+const user = new User({
+        email: email,
+        password: password,
+        name: name
+    })
+
+    user.save();
+    res.json({
+        "msg": "user created successfully"
+    })
+
+
+NOTE: if an ip to insert into db is send with pattern not matcching mongoose schema
+then it is not inserted in the db , but we as developers do not get to track that,
+and hence for that we must use zod for input validation and input validation middleware for the same and send back appropriate status code and msg
+
+
+await User.find({})  returns all entries matching the obj entry here returns all entries
+await User.deleteOne({}) 
+all these use await
+
+
+
+
+
+
+Standard middlewares
+1) number of requests made to server
+code:
+// You have been given an express server which has a few endpoints.
+// Your task is to create a global middleware (app.use) which will
+// maintain a count of the number of requests made to the server in the global
+// requestCount variable
+let count_req_middleware = (req,res,next)=>{
+  requestCount=requestCount+1;
+  next();
+}
+
+app.use(count_req_middleware);
+end.
+
+2) rate limiter ***********important***********
+code:
+// You have been given an express server which has a few endpoints.
+// Your task is to create a global middleware (app.use) which will
+// rate limit the requests from a user to only 5 request per second
+// If a user sends more than 5 requests in a single second, the server
+// should block them with a 404.
+// User will be sending in their user id in the header as 'user-id'
+// You have been given a numberOfRequestsForUser object to start off with which
+// clears every one second
+let numberOfRequestsForUser = {};
+setInterval(()=>{
+   numberOfRequestsForUser = {};
+},1000)
+app.use((req,res,next)=>{
+  let userId = req.headers["user-Id"];
+  // need to check if for userId is initialized or not
+  if(numberOfRequestsForUser[userId]){
+    numberOfRequestsForUser[userId]=numberOfRequestsForUser[userId]+1;
+    if(numberOfRequestsForUser[userId]>5){
+      res.status(404).send("no entry");
+    }
+    else{
+      next();
+    }
+  }
+  else{
+    numberOfRequestsForUser[userId]=1;
+    next();
+  }
+})
+end.
+
+
+3) error count and handling middleware
+code:
+// You have been given an express server which has a few endpoints.
+// Your task is to
+// 1. Ensure that if there is ever an exception, the end user sees a status code of 404
+// 2. Maintain the errorCount variable whose value should go up every time there is an exception in any endpoint
+// error middleware global catches
+app.use((err,req,res,next)=>{
+  errorCount++;
+  res.status(404)
+})
+end.
+
+
+
+Try Catch
+When an exception is raised the process exits since the JS program doesn't want ot proceed anymore. 
+But you might want the program to still continue executing. That is where you can use try catches.
+
+try{
+  // code segment
+}catch(err){
+  // do something with err
+}
+
+
+Why don't we let the user hit the database directly, what extra does the http server provide exactly??
+DBs were are created using protocols that browsers don't understand.
+DBs don't have granual access as a first class citizen. Very hard to do user specific access in them. Somebody either has access to all types of data in db or none .
+
+
+
+
+
+
+
+
+MONGO :
+
+schema:
+const UserSchema = new mongoose.Schema({
+    email: String,
+    password: String,
+    purchasedCourses: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Course'
+    }]
+})
+
+accesing the above one using refrencing
+router.get('/purchasedCourses', userMiddleware,async (req, res) => {
+    // Implement fetching purchased courses logic
+
+    const user = await User.findOne({
+        username: req.headers.username
+    })
+
+    //console.log(user.purchasedCourses);
+
+    const courses = await Course.find({
+        _id : {
+            "$in" : user.purchasedCourses
+        }
+    })
+    res.json({
+        courses : courses
+    })
+
+});
+
+const CourseSchema = new mongoose.Schema({
+    title: String,
+    price: 5999
+})
+
+const User = mongoose.model('User',UserSchema);
+const Course = mongoose.model('Course',CourseSchema);
+
+// create 
+User.create({
+    username: req.body.username,
+    password: req.body.password
+})
+
+const newCourse = await Course.create({
+        title,
+        description,
+        imageLink,
+        price
+    })
+
+    res.json({
+        message: 'Course created successfully', 
+        courseId: newCourse._id
+    })
+
+// read
+User.findById("1")
+User.findOne({
+    username: "harkirat"
+})
+User.find({
+    username: "harkirat"
+})
+
+// update
+User.updateOne({
+    id:"1"
+},{
+    password:"newPassword"
+})
+
+User.updateMany({},{
+    premium:true
+})
+
+
+await User.updateOne({
+            username : username
+        },{
+            "$push" : {
+                purchasedCourses : courseId
+            }
+        })
+    
+        res.json({
+            message : "Course purhcased successfully"
+        })
+
+// delete
+User.deleteMany({})
+User.deleteOne({
+    username:"harkirat"
+})

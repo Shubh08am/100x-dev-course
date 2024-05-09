@@ -1,0 +1,81 @@
+<!-- TODO APP USING DOM -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ToDo</title>
+</head>
+
+<body>
+    <input type="text" id="title" placeholder="Todo title"></input> <br /><br />
+    <input type="text" id="description" placeholder="Todo description"></input> <br /><br />
+    
+    <button onclick="addTodo()">Add todo</button>
+    <br /> <br />
+    
+    <div id="todos">
+        <script>
+            let globalId = 1;
+            
+            
+            function createChild(title, description, id) {
+              const child = document.createElement("div");
+            
+              const firstGrandParent = document.createElement("div");
+              firstGrandParent.innerHTML = title;
+            
+              const secondGrandParent = document.createElement("div");
+              secondGrandParent.innerHTML = description;
+            
+              const thirdGrandParent = document.createElement("button");
+              thirdGrandParent.innerHTML = "Mark as done"; 
+              //changing markas done to done here
+              thirdGrandParent.setAttribute("onclick", `markAsDone(${id})`);
+            
+              //creating a todo with three children title,description and mark as done i.e button option 
+              child.appendChild(firstGrandParent);
+              child.appendChild(secondGrandParent);
+              child.appendChild(thirdGrandParent);
+              child.setAttribute("id", id);
+            
+              return child;
+            }
+            
+           /* function addTodo() {
+              const title = document.getElementById("title").value;
+              const description = document.getElementById("description").value;
+              const parent = document.getElementById("todos"); 
+              //every todo is given a id like 1 2 so on using globalID
+              parent.appendChild(createChild(title, description, globalId++));
+            } */
+        
+            //state will always be a array containing title , description and id
+            function updateDomAccToState(state){
+                    let parent = document.getElementById("todos");
+                    parent.innerHTML="";
+        
+                    //for loop on state.length only -> another way to write 
+                    state.forEach((ele,id)=>{
+                        parent.appendChild(createChild(ele.title,ele.description,ele.id))
+                    })
+                }
+               //backend of todo and we render it on front-end 
+                window.setInterval(async ()=>{
+                    const res = await fetch("https://sum-server.100xdevs.com/todos");
+                    const json = await res.json();
+                    updateDomAccToState(json.todos);
+                },5000)
+        
+                //ugly way to add to do 
+              /*  updateDomAccToState([{
+                    title:"go to gym",
+                    description:"go to gym from 5-7",
+                   id:1
+                 }])
+             */
+            </script>
+    </div>
+    </body>
+</html>

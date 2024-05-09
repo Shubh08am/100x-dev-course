@@ -1,0 +1,856 @@
+************very imp notes shared in week 7 course*****************
+
+
+Single Page application
+
+Before react was introduced whenever we open a site, let's say linkedin.com we sent a http request and get back index.html ,index.js and so on files in the response. Anytime if clicked on lets say linkedin.com/messages a new request was send and new html js and css was received and there used to be a hard reload.
+Now it has changed. In the first time itself we get all the html ,js and css now based on what we click decides what components should render and what not, this makes react a single page application. Here we are dynamically changing the pages but not refetching from backend everytime is single page applications.
+
+Client side routing
+Since we have all html css and js for all pages all at once , what we perform is client side routing to deliver what we need.
+
+Client side bundle
+The big bundle that we get on the client side that has all the js code
+
+How to do routing on dom
+react-router-dom helps u do it. 
+npm install react-router-dom
+
+
+
+useNavigate hook 
+this hook is provided by react-router-dom framework which prevents getting the client bundle again , what it does is client side routing by changing the path but using the same bundle
+import {useNavigate} from 'react-router-dom'
+
+window.location.href
+if we update this on button click, from network tab we can figure out that we are everytime getting the client bundle back which is not client side routing.
+
+
+// assignment
+what we want to do is create two pages landing and dashboard and switch between those using button in the topbar which is same for all the pages.
+
+
+
+import { useState } from 'react'
+import {BrowserRouter, Routes,Route, useNavigate} from 'react-router-dom'
+import {Dashboard} from './components/Dashboard'
+import {Landing} from "./components/Landing"
+
+function App() {
+  const [count, setCount] = useState(0);
+
+  // intialise the useNavigate hook
+  const navigate = useNavigate();
+
+  // linkedin has a constant topbar on all the pages
+  // can we implement something like that
+  return (
+    <div>
+      <div >
+        <button onClick={()=>{
+          // this does the job but is not client side routing
+          // everytime the site reloads and we get html css js back
+          // window.location.href="/dashboard";
+
+          navigate("/dashboard")
+        }}>Dashboard</button>
+
+        <button onClick={()=>{
+          // window.location.href="/";
+          navigate("/");
+        }}>Landing</button>
+
+      </div>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/dashboard" element={<Dashboard></Dashboard>}></Route>
+          <Route path="/" element={<Landing></Landing>}></Route>
+        </Routes>
+      </BrowserRouter>
+    </div>
+    
+  )
+}
+
+export default App
+
+
+The above code gives error because the useNavigate hook must be used inside the <BrowserRouter> . Also we must invoke useNavigate inside the browser router.
+
+
+import { useState } from 'react'
+import {BrowserRouter, Routes,Route, useNavigate} from 'react-router-dom'
+import {Dashboard} from './components/Dashboard'
+import {Landing} from "./components/Landing"
+
+function App() {
+  const [count, setCount] = useState(0);
+
+  // intialise the useNavigate hook always inside the BrowserRouter
+  // const navigate = useNavigate();
+
+  // linkedin has a constant topbar on all the pages
+  // can we implement something like that
+  return (
+    <div>
+      
+      <BrowserRouter>
+        <Appbar></Appbar>
+        <Routes>
+          <Route path="/dashboard" element={<Dashboard></Dashboard>}></Route>
+          <Route path="/" element={<Landing></Landing>}></Route>
+        </Routes>
+      </BrowserRouter>
+    </div>
+    
+  )
+}
+
+function Appbar(){
+  const navigate = useNavigate();
+ return (
+  
+  <div >
+    <button onClick={()=>{
+      // this does the job but is not client side routing
+      // everytime the site reloads and we get html css js back
+      // window.location.href="/dashboard";
+
+      navigate("/dashboard")
+    }}>Dashboard</button>
+
+    <button onClick={()=>{
+      // window.location.href="/";
+      navigate("/");
+    }}>Landing</button>
+
+  </div>
+ )
+}
+export default App
+
+the above code is good for client side routing.
+
+
+
+Difference between export default and export with Named exports in javascript.
+
+Export Default
+The export default syntax allows you to export a single value from a module as the default export. When another module imports the module that uses export default, the imported value will be whatever value was exported as the default. You can only have one default export per module.
+Here’s an example of using export default to export a greeting message:
+// app.js
+import greeting from "./greetings.js";
+console.log(greeting); // outputs "Hello, world!"
+
+And here’s an example of importing the default export from another module:
+// app.js
+import greeting from "./greetings.js";
+console.log(greeting); // outputs "Hello, world!"
+
+As you can see, the import statement doesn't need to specify the name of the default export, since there can only be one.
+
+Export with Named Exports
+The export syntax with named exports allows you to export multiple values from a module using named exports. When another module imports the module that uses named exports, the imported values will be an object with the exported values as properties. You can have multiple named exports per module.
+
+Here’s an example of using export with named exports to export both a greeting and a farewell message:
+// greetings.js
+export const greeting = "Hello, world!";
+export const farewell = "Goodbye, world!";
+
+And here’s an example of importing the named exports from another module:
+
+// app.js
+import { greeting, farewell } from "./greetings.js";
+console.log(greeting); // outputs "Hello, world!"
+console.log(farewell); // outputs "Goodbye, world!"
+
+Note that when importing named exports, the import statement must use the exact name of the exported value, surrounded by curly braces.
+
+Lazy Loading 
+Most of times user would not switch to all the pages either just go to one or two pages, wouldn't that be nice if we could get only the needed code and as when the user goes to the other page we may get that code. This is called lazy loading.
+
+To implement lazy loading we must use export default in both landing.jsx and dashboard.jsx .
+
+
+Suspense API
+in lazy loading whenver we first time go to new page we get details from backend which is async and may take some time so for such codes we must wrap them inside suspense api.
+
+
+lazy loading and suspense api code
+
+import { Suspense,useState,lazy } from 'react'
+import {BrowserRouter, Routes,Route, useNavigate} from 'react-router-dom'
+const Dashboard = lazy(()=>import ('./components/Dashboard'))
+const Landing = lazy(()=> import ("./components/Landing"))
+
+function App() {
+  const [count, setCount] = useState(0);
+
+  // intialise the useNavigate hook always inside the BrowserRouter
+  // const navigate = useNavigate();
+
+  // linkedin has a constant topbar on all the pages
+  // can we implement something like that
+  return (
+    <div>
+      
+      <BrowserRouter>
+        <Appbar></Appbar>
+        <Routes>
+          <Route path="/dashboard" element={<Suspense fallback={"loading..."}><Dashboard></Dashboard></Suspense>}></Route>
+          <Route path="/" element={<Suspense fallback={"loading..."}><Landing></Landing></Suspense>}></Route>
+        </Routes>
+      </BrowserRouter>
+    </div>
+    
+  )
+}
+
+function Appbar(){
+  const navigate = useNavigate();
+ return (
+  
+  <div >
+    <button onClick={()=>{
+      // this does the job but is not client side routing
+      // everytime the site reloads and we get html css js back
+      // window.location.href="/dashboard";
+
+      navigate("/dashboard")
+    }}>Dashboard</button>
+
+    <button onClick={()=>{
+      // window.location.href="/";
+      navigate("/");
+    }}>Landing</button>
+
+  </div>
+ )
+}
+export default App
+
+
+
+
+Prop drilling
+prop drilling means passing props down a component tree which makes code ugly, unappealing and highly verbose. 
+
+Context API
+this provides a solution to prop drilling 
+Context api lets you teleport props to distant children 
+Context api is only syntatic sugar, it only makes code look cleaner and does not makes it more performant, to make code performant we use redux/recoi i.e, state management
+
+context.jsx file
+import { createContext } from "react";
+
+export const CountContext = createContext(0);
+
+app.jsx file
+import { useState,useContext } from 'react'
+import {CountContext} from "./context"
+import reactLogo from './assets/react.svg'
+import viteLogo from '/vite.svg'
+
+function App() {
+  const [count, setCount] = useState(0)
+
+  return (
+    <div>
+      <CountContext.Provider value = {count}>
+        <Count setCount={setCount} ></Count>
+      </CountContext.Provider>
+      
+    </div>
+  )
+}
+
+function Count({setCount}){
+  return <div>
+    <CountRenderer></CountRenderer>
+    <Buttons setCount={setCount}></Buttons>
+  </div>
+}
+function CountRenderer(){
+  const count = useContext(CountContext);
+  return <div>
+    <b>
+      {count}
+    </b>
+  </div>
+}
+
+function Buttons({setCount}){
+  const count = useContext(CountContext);
+  return <div>
+    <button onClick={()=>{
+      setCount(count+1)
+    }}>increase</button>
+    <button onClick={()=>{
+      setCount(count-1)
+    }}>decrese</button>
+  </div>
+  
+}
+
+export default App
+
+
+
+context.jsx file
+
+import { createContext } from "react";
+export const CountContext = createContext({count,setCount});
+
+
+app.jsx file
+
+import { useState,useContext } from 'react'
+import {CountContext} from "./context"
+import reactLogo from './assets/react.svg'
+import viteLogo from '/vite.svg'
+
+function App() {
+  const [count, setCount] = useState(0)
+
+  return (
+    <div>
+      <CountContext.Provider value = {{count, setCount}}>
+        <Count ></Count>
+      </CountContext.Provider>
+    </div>
+  )
+}
+
+function Count(){
+  return <div>
+    <CountRenderer></CountRenderer>
+    <Buttons ></Buttons>
+  </div>
+}
+function CountRenderer(){
+  const {count,setCount} = useContext(CountContext);
+  return <div>
+    <b>
+      {count}
+    </b>
+  </div>
+}
+
+function Buttons(){
+  const {count,setCount} = useContext(CountContext);
+  return <div>
+    <button onClick={()=>{
+      setCount(count+1)
+    }}>increase</button>
+    <button onClick={()=>{
+      setCount(count-1)
+    }}>decrese</button>
+  </div>
+  
+}
+
+export default App
+
+
+
+Why do u use context api ??
+just for syntax cleaner and get rid of prop drilling
+
+
+Problem context api
+it doesn't make rendering more performant , i.e, although Count() component in app.jsx does not use count variable which is a state variable but it still gets rerendered everytime which it should not
+
+
+
+State Management Libraries
+It gives both clean syntax i.e, rid of prop drilling and also more performant re-rendering.
+
+What is state management?
+A cleaner way to store the state of your app. Until now, the cleanest thing you can do is use the context api. It lets you teleport state.
+But there are better solutions that get rid of the problems that context api has (unnecessary re-renders).
+
+
+Any react app has to things:
+1) state 
+2) components
+
+Recoil 
+A state management library for react
+
+1) Recoil has a concept of an atom to store the state
+atom is analogus to useState hook we've been using
+
+2) An atom can be defined outside the component
+3) can be teleported to any component
+
+Only the components which uses a particular atom would re-render rest won't in a component tree
+
+
+step-1) npm install recoil
+
+Things to learn
+RecoilRoot  wherever we want to use any atom/recoil logic it must be wrapped in 
+atom 
+useRecoilState   returns both [count,setCount]
+useRecoilValue   returns only count
+useSetRecoilState returns only setCount
+selector
+asynchronous data queries
+atomFamily 
+selectorFamily
+useRecoilValueLoadable
+useRecoilStateLoadable
+
+
+./store/atoms/count.jsx
+
+import {atom} from 'recoil';
+// atom function accepts a single object as an argument 
+// the object has key which needs to be unique for each atom
+// default supposed to be the default value which this atom will hold
+
+export const countAtom = atom({
+    key: "countAtom",
+    default: 0
+})
+
+app.jsx
+import {useContext} from 'react'
+import {CountContext} from "./context"
+import reactLogo from './assets/react.svg'
+import viteLogo from '/vite.svg'
+import { RecoilRoot, useRecoilState, useRecoilValue, useSetRecoilState } from 'recoil'
+import { countAtom } from './store/atoms/count'
+
+function App() {
+  return (
+    <div>
+      
+      <RecoilRoot>
+        <Count></Count>
+      </RecoilRoot>
+    </div>
+  )
+}
+
+// this compoenent is no longer re-rendering
+function Count(){
+  return <div>
+    <CountRenderer></CountRenderer>
+    <Buttons ></Buttons>
+  </div>
+}
+function CountRenderer(){
+  const count = useRecoilValue(countAtom);
+  return <div>
+    <b>
+      {count}
+    </b>
+  </div>
+}
+
+function Buttons(){
+  const setCount= useSetRecoilState(countAtom);
+  return <div>
+    <button onClick={()=>{
+      setCount(count=>count+1)
+    }}>increase</button>
+    <button onClick={()=>{
+      setCount(count=>count-1)
+    }}>decrese</button>
+  </div>
+  
+}
+
+export default App
+
+
+
+Selectors in recoil
+A selector represents a piece of derived state. You can think of derived state as the output of passing state to a pure function that derives a new value from  the said state.
+
+in the code segment provided below we can clearly see the function to calculate wheter a number is odd or even entirely depends on the value of count variable and hence we've used useMemo hook to make sure to run that function only when count changes.
+
+function EvenCountRenderer(){
+  const count = useRecoilValue(countAtom);
+  
+  // useMemo is used for executing function only when count changes
+  const isEven = useMemo(()=>{
+    return count%2==0;
+  },[count])
+
+  return <div>
+    {isEven ? "it is even" : null}
+  </div>
+
+}
+
+
+the same thing can be achieved using selector in recoil
+create and export selector in count.jsx
+
+// selectors can depend on one or multiple atoms or selctors
+export const evenSelector = selector({
+    key:"evenSelector",
+    get : ({get})=>{
+        // this the arguments of get are same as dependency of useMemo
+        const  count = get(countAtom);
+        return (count%2)==0;
+    }
+});
+
+
+app.jsx , evenCountRenderer component
+
+function EvenCountRenderer(){
+  // const count = useRecoilValue(countAtom);
+  
+  // useMemo is used for executing function only when count changes
+  /*const isEven = useMemo(()=>{
+    return count%2==0;
+  },[count])*/
+
+  const isEven = useRecoilValue(evenSelector);
+
+  return <div>
+    {isEven ? "it is even" : null}
+  </div>
+
+}
+
+
+
+Asynchronous data queries
+How to you send backend requests to update the value of atoms??
+solution asynchronous data queries
+
+
+brute solution using useEffect
+
+atoms.jsx
+
+import {atom,selector} from 'recoil'
+
+export const notifications = atom({
+    key:"notifications",
+    default : {
+        network: 4,
+        jobs: 25,
+        messaging: 3,
+        notifications: 25
+    }
+});
+
+export const totalNotificationSelector = selector({
+    key: "totalNotificationSelector",
+    get: ({get}) => {
+        const allNotifications = get(notifications);
+        return allNotifications.network + 
+        allNotifications.jobs + 
+        allNotifications.notifications + 
+        allNotifications.messaging
+    }
+}) ;
+
+
+app.jsx
+
+import './App.css'
+import { RecoilRoot, useRecoilState, useRecoilValue, useSetRecoilState } from 'recoil'
+import { notifications, totalNotificationSelector } from './atoms'
+import { useEffect } from 'react'
+import axios from 'axios'
+
+function App() {
+  return <RecoilRoot>
+    <MainApp />
+  </RecoilRoot>
+}
+
+function MainApp() {
+  const [networkCount, setNetworkCount] = useRecoilState(notifications)
+  const totalNotificationCount = useRecoilValue(totalNotificationSelector);
+
+  useEffect(() => {
+    // fetch
+    // axios.get("https://sum-server.100xdevs.com/notifications")
+    //   .then(res => {
+    //     setNetworkCount(res.data)
+    //   })
+
+      fetch("https://sum-server.100xdevs.com/notifications").then(async (res)=>{
+        const json =  await res.json();
+        setNetworkCount(json);
+
+      })
+  }, [])
+
+
+
+  return (
+    <>
+      <button>Home</button>
+      
+      <button>My network ({networkCount.network >= 100 ? "99+" : networkCount.network})</button>
+      <button>Jobs {networkCount.jobs}</button>
+      <button>Messaging ({networkCount.messaging})</button>
+      <button>Notifications ({networkCount.notifications})</button>
+
+      <button>Me ({totalNotificationCount})</button>
+    </>
+  )
+}
+
+export default App
+
+
+
+problem : the flow is that first the notifications atom is set to default value and the page is rendered then , backend call fetch is made bye useEffect hook, then we get values from backend and then notificaitons atom is update and site again re-rendered, which causes a flash. 
+
+Target: what we want is that the very first render of the site happens once we've fetched values from backend. We want to set the default values of notifications atom by the values which we recieve after async fetch.
+
+Solution : default value cannot be an async function. It can be a selector which can be a async function call.
+
+atoms.jsx
+import {atom,selector} from 'recoil'
+import axios from 'axios'
+
+export const notifications = atom({
+    key:"notifications",
+    default : selector({
+        key: "networkAtomSelector",
+        get: async()=>{
+            const res = await fetch("https://sum-server.100xdevs.com/notifications")
+            const json = await  res.json();
+            return json;
+        }
+    })
+});
+
+export const totalNotificationSelector = selector({
+    key: "totalNotificationSelector",
+    get: ({get}) => {
+        const allNotifications = get(notifications);
+        return allNotifications.network + 
+        allNotifications.jobs + 
+        allNotifications.notifications + 
+        allNotifications.messaging
+    }
+}) ;
+
+
+app.jsx
+
+import './App.css'
+import { RecoilRoot, useRecoilState, useRecoilValue, useSetRecoilState } from 'recoil'
+import { notifications, totalNotificationSelector } from './atoms'
+import { useEffect } from 'react'
+import axios from 'axios'
+
+function App() {
+  return <RecoilRoot>
+    <MainApp />
+  </RecoilRoot>
+}
+
+function MainApp() {
+  const [networkCount, setNetworkCount] = useRecoilState(notifications)
+  const totalNotificationCount = useRecoilValue(totalNotificationSelector);
+
+  return (
+    <>
+      <button>Home</button>
+      
+      <button>My network ({networkCount.network >= 100 ? "99+" : networkCount.network})</button>
+      <button>Jobs {networkCount.jobs}</button>
+      <button>Messaging ({networkCount.messaging})</button>
+      <button>Notifications ({networkCount.notifications})</button>
+
+      <button>Me ({totalNotificationCount})</button>
+    </>
+  )
+}
+
+export default App
+
+
+what happens now is initially the screen is completely blank until the backend responses and only then rendered.
+Asynchronous data queries is particularly used when we want to initialise bases on axios.get for fetch
+For this we can place a loader for all this while 
+
+
+
+AtomFamily
+Returns a function that returns a writeable RecoilState atom.
+Sometimes you need more than one atom for your use case.
+eg: each product on an e-commerce site is an atom in itself , belonging to same atom family.
+We could even use an array of items but the problem is if one item changes the entire atom having that array changes and hence everythin re-renders. So it's better to use atom family.
+
+
+todos.js
+export const Todos =[{id:1,title:"gym",description: "go to gym"},
+                     {id:2,title:"class",description:"go to class"}];
+
+
+atoms.jsx
+
+import {atom,selector,atomFamily} from 'recoil'
+import {Todos} from "./todos"
+
+export const todosFamily = atomFamily({
+    key : "todosAtomFamily",
+    default: id => {
+        return Todos.find(todo => todo.id === id)
+    }
+})
+
+
+app.jsx
+import { useState } from 'react'
+import { RecoilRoot,useRecoilValue,useRecoilState,useSetRecoilState } from 'recoil'
+import reactLogo from './assets/react.svg'
+import viteLogo from '/vite.svg'
+import './App.css'
+import { todosFamily } from './atoms'
+function App() {
+  const [count, setCount] = useState(0)
+
+  return (
+    <>
+    <RecoilRoot>
+      <Todo id={1}></Todo>
+      <Todo id={2}></Todo>
+    </RecoilRoot>
+    </>
+  )
+}
+
+function Todo({id}){
+  const curr_todo = useRecoilValue(todosFamily(id));
+  return <div>
+    title: {curr_todo.id}
+    description : {curr_todo.description}
+  </div>
+}
+
+export default App
+
+
+
+
+
+the above code works when this is present but what if we need to fetch it from backend, that what we use selectorFamily for
+
+
+atoms.jsx
+import {atomFamily,selectorFamily } from 'recoil'
+
+export const todosFamily = atomFamily({
+    key:"todosAtomFamily",
+    default: selectorFamily({
+        key: "todosSelectorFamily",
+        get : (id)=>{
+            return async ({get})=>{
+                const res = await fetch(`https://sum-server.100xdevs.com/todo?id=${id}`);
+
+                const json = await res.json();
+                return json.todo;
+            }
+        }
+    })
+})
+
+app.jsx
+import { useState } from 'react'
+import { RecoilRoot,useRecoilValue,useRecoilState,useSetRecoilState } from 'recoil'
+import reactLogo from './assets/react.svg'
+import viteLogo from '/vite.svg'
+import './App.css'
+import { todosFamily } from './atoms'
+function App() {
+ 
+
+  return (
+    <>
+    <RecoilRoot>
+      <Todo id={1}></Todo>
+      <Todo id={2}></Todo>
+    </RecoilRoot>
+    </>
+  )
+}
+
+function Todo({id}){
+  const curr_todo = useRecoilValue(todosFamily(id));
+  return <div>
+    title: {curr_todo.title}
+    description : {curr_todo.description}
+  </div>
+}
+
+export default App
+
+
+
+
+how to handle delays in loading and error
+
+delays in loading can be handled using suspense api and for errors could use error boundary
+import {Suspense} from 'react'
+return <div>
+<RecoilRoot>
+<Suspense fallback = {"loading"}>
+<Todo id={1}></Todo>
+<Todo id={2}></Todo>
+</Suspense>
+</RecoiRoot>
+</div>
+
+
+
+useRecoilStateLoadable and useRecoilValueLoadable
+
+use to handle delays in asyn calls and also handle errors
+
+app.jsx
+import { useState } from 'react'
+import { RecoilRoot,useRecoilValue,useRecoilState,useSetRecoilState, useRecoilValueLoadable } from 'recoil'
+import reactLogo from './assets/react.svg'
+import viteLogo from '/vite.svg'
+import './App.css'
+import { todosFamily } from './atoms'
+function App() {
+ 
+
+  return (
+    <>
+    <RecoilRoot>
+      <Todo id={1}></Todo>
+      <Todo id={3}></Todo>
+    </RecoilRoot>
+    </>
+  )
+}
+
+function Todo({id}){
+  const curr_todo = useRecoilValueLoadable(todosFamily(id));
+  if(curr_todo.state=="loading"){
+    return <div>
+      loading..
+    </div>
+  }
+  else if(curr_todo.state=="hasValue"){
+    return <div>
+    title: {curr_todo.contents.title}
+    description : {curr_todo.contents.description}
+    </div>
+  }
+  else if(curr_todo.state=="hasError"){
+    return <div>
+      error while loading from backend
+    </div>
+  }
+  
+}
+
+export default App

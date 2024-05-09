@@ -1,0 +1,76 @@
+Why frontend libraries??
+we generally need these libraries for dynamic websites and not generally static websites.
+
+
+Browsers dont understand react, react under the hood uses html/css/js.
+
+NOTE: str.split(" ");
+this returns an array splitting the string based on " "
+
+Some react jargon
+1) state- An object that represents the state of the app. It represents the dynamic things in ur app(things that change).
+eg- the value of counter in basic counter website
+the state would only be 
+{
+ count: 1;
+}
+
+eg- for a linkedin topbar
+{
+  topbar: {
+	    home : 0,
+            myNetwork: "99+",
+            jobs: 0,
+            messaging: 0,
+            notification : 10
+  }
+}
+
+
+2) component- How a DOM element should render , given a state
+It is a re-usable, dynamic, HTML snippet that change given the state
+eg- the button in basic counter website is component. It takes the state(currentCount) as an input and is supposed to render accordingly.
+
+3) re-rendering- a state change triggers a re-render. A re-render represents the actual DOM being manipulated when the state changes.
+
+
+You usually have to define all ur components onece and then all you have to do is update the state of your own app, React tkaes care of re-rendering of your app.
+
+jsx=> a js file ,inside which u can write both JS and xml
+
+
+
+Virtual DOM
+React uses a virtual DOM to optimize updates and improve performance. The virtual DOM is an in-memory representation of the actual DOM elements. It's a lightweight copy of the real DOM.
+When you make changes to the state of a React component, React creates a new virtual DOM tree representing the updated state.
+React then compares the new virtual DOM with the previous virtual DOM to determine the differences (diffing).
+The differences are used to compute the most efficient way to update the real DOM.
+ 
+
+Note: npm run build : this command converts react to html and js
+
+
+how to send fetch requests
+
+fetch("http://localhost:3000/todo",{
+                method:"POST",
+                body:JSON.stringify({
+                    title:title,
+                    description:description
+                }),headers : {
+                    "Content-type" : "application/json"
+                }
+            })
+
+
+
+very imp video is create a todo app, learn completely all things and try other projects also
+
+
+
+Cors error
+We can't just hit the backend from any frontend
+for that you can use cors
+npm install cors
+const cors = require('cors')
+app.use(cors());

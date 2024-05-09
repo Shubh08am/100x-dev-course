@@ -1,0 +1,36 @@
+What is dynamic website?
+1. Changing the elements on the website once the website is loaded
+2. Actually calculating the sum based on the ips and rendering it on the screen
+
+
+Throttling and debouncing
+Ignoring requests on backend is throttling
+Delaying and sending only updated requests from frontend is debouncing
+
+eg: go and type in amazon search bar , if u type slow it keeps giving suggestions i.e, backend calls are made but if we type fast then no suggestions until we take a small pause i.e, back end calls are delayed 
+
+<input type="number" id="ip1" oninput="backendCallFunc()"><br><br>
+<input type="number" id="ip2" oninput="backendCallFunc()"><br><br>
+
+this may cause too many unneccsary backend calls
+
+
+<input type="number" id="ip1" oninput="debounceBackendCallFunc()"><br><br>
+<input type="number" id="ip2" oninput="debounceBackendCallFunc()"><br><br>
+
+let prev;
+function debounceBackendCallFunc(){
+    clearTimeout(prev)
+    prev=setTimeout(backendCallFunc(),100);
+}
+
+
+what to do with state received from backend??
+compare the new state with the previous state , check the difference and then update the dom accordingly. Till now what we did was to clear the dom and then create a new dom but this isn't efficient.
+
+
+
+React Start
+on termianl cd to desired folder
+npm create vite@latest
+give project name , select react and then javascript

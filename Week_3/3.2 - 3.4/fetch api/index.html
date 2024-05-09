@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fetch app</title>
+</head>
+<body>
+    
+    <button id="animal-button">Animal data</button>
+
+
+    <script>
+        let animal_button = document.querySelector("button")
+        let getAnimalData = async ()=>{
+
+            // using promises -> no need for async here 
+            // fetch("https://fakerapi.it/api/v1/persons").then((response)=>{
+            //     response.json().then((data)=>{
+            //         console.log(data);
+            //     })
+            // })
+
+            const response = await fetch("https://fakerapi.it/api/v1/persons");
+            const data = await response.json();
+            console.log(data);
+            
+        }
+        animal_button.addEventListener("click",getAnimalData)
+        
+    </script>
+    
+</body>
+</html>

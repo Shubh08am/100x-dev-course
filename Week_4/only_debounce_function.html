@@ -1,0 +1,17 @@
+<!-- generic way to write a debounce code INTERVIEW QUESTION-->
+
+<!-- call populateDiv if 100ms tak call na kiya gya hoo --> 
+<!-- if ek bar call hogya tho curr timer ko stop kro and reset and wait for 100 ms -->
+let timeout; 
+    function debouncePopulateDiv(){
+        <!-- delay the call to populateDiv untill i have not been called for 100 ms
+        //and I've been called atleast once  
+        //to cancel clock -> clearTimeout -->
+
+       clearTimeout(timeout); <!--stops the current clock and start a new clock -->
+       timeout =  setTimeout(function(){
+            populateDiv(); <!-- place the function here to be called-->
+        },100); 
+    }
+
+    

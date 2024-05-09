@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<script>
+    function populateDiv(){
+        const a = document.getElementById("firstNumber").value; 
+        const b = document.getElementById("secondNumber").value;
+     
+     //Now,we can't directly use it , hit a backend server i.e request backend and get the response 
+     //   element.innerHTML = parseInt(a)+parseInt(b);
+
+     //using fetch 
+     //first sending the request from frontend to backend and resolve it using then as fetch returns promise 
+    //see sum-server js backend code for it 
+     fetch("http://localhost:8080/sum?a=" + a + "&b=" + b)
+     .then(function (response){
+           // console.log(response);
+
+            //see response type -> json , text , binary --> here text 
+            //response text is also a promise therefore resolve it using then 
+            response.text().then(function(ans){
+                //console.log(ans);
+                document.getElementById("finalSum").innerHTML = ans ; 
+            })
+     }) ;
+
+        //cleaner way using async and await 
+     /*   async function populateDiv2(){
+            const a = document.getElementById("firstNumber").value; 
+            const b = document.getElementById("secondNumber").value;
+            const response = await fetch("http://localhost:8080/sum?a=" + a + "&b=" + b)
+            const ans = await response.text(); 
+            document.getElementById("finalSum").innerHTML = ans ; 
+
+        }
+    */
+    }
+</script>
+<body>
+    <input id="firstNumber" type="text" placeholder="first number"> </input> <br></br> 
+    <input id="secondNumber" type="text" placeholder="second number"> </input> <br></br> 
+    <button onclick="populateDiv()">Calculate Sum</button> <br> </br> 
+    <div id="finalSum"></div>
+
+</body>
+</html>
